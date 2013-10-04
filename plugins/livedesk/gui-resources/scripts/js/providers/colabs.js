@@ -97,6 +97,7 @@ function(providers, $, giz, Blog, Collaborator, Person, BlogAction)
                     .fail(function(){ el.removeClass('draggable'); });
                 });
 
+
             return self;
         },
         
@@ -335,7 +336,7 @@ function(providers, $, giz, Blog, Collaborator, Person, BlogAction)
                 });
                 
             });
-
+            
             //dynamically get size of header and set top space for list
             var top_space = $('.collaborators-header').outerHeight() + 20;
             $('.post-list.collabs').css({'top': top_space});
