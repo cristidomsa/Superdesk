@@ -50,7 +50,7 @@ class TaskMapped(Base, Task):
 
 # --------------------------------------------------------------------
 
-class TaskNestMapped(Base):
+class TaskNest(Base):
     '''
     Provides the mapping for nested sets for Task hierarchy.
     '''

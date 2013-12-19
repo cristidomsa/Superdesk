@@ -19,6 +19,7 @@ from datetime import datetime
 from ..api.desk import Desk
 from ..api.task_status import TaskStatus
 from ..api.task_type import TaskType
+from ally.api.option import SliceAndTotal
 
 # --------------------------------------------------------------------
 
@@ -67,22 +68,22 @@ class ITaskService(IEntityService):
     '''
 
     @call(method=GET)
-    def getAll(self, deskId:Desk.Id=None, userId:User.Id=None, statusKey:TaskStatus.Name=None, thumbSize:str=None,
-               detailed:bool=True, q:QTask=None) -> Iter(Task.Id):
+    def getAll(self, deskId:Desk.Id=None, userId:User.Id=None, statusKey:TaskStatus.Name=None,
+               detailed:bool=True, q:QTask=None, **options:SliceAndTotal) -> Iter(Task.Id):
         '''
         Provides all the available tasks.
         '''
 
     @call(method=GET, webName='Task')
-    def getSubtasks(self, taskId:Task.Id, statusKey:TaskStatus.Name=None, thumbSize:str=None,
-               detailed:bool=True, q:QTask=None) -> Iter(Task.Id):
+    def getSubtasks(self, taskId:Task.Id, statusKey:TaskStatus.Name=None,
+               detailed:bool=True, q:QTask=None, **options:SliceAndTotal) -> Iter(Task.Id):
         '''
         Provides the direct subtasks of a task.
         '''
 
     @call(method=GET, webName='Tree')
-    def getSubtree(self, taskId:Task.Id, statusKey:TaskStatus.Name=None, thumbSize:str=None,
-               detailed:bool=True, q:QTask=None) -> Iter(Task.Id):
+    def getSubtree(self, taskId:Task.Id, statusKey:TaskStatus.Name=None,
+               detailed:bool=True, q:QTask=None, **options:SliceAndTotal) -> Iter(Task.Id):
         '''
         Provides the whole subtree available tasks.
         '''

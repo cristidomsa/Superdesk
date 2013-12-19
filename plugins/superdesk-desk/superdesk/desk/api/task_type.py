@@ -13,7 +13,7 @@ from ally.api.config import service, call, DELETE, UPDATE, GET
 from ally.api.type import Iter
 from superdesk.api.domain_superdesk import modelDesk
 from superdesk.desk.api.task_status import TaskStatus
-from ally.support.api.entity_named import Entity, IEntityService
+from ally.support.api.entity_named import Entity, IEntityNQService
 
 # --------------------------------------------------------------------
 
@@ -29,7 +29,7 @@ class TaskType(Entity):
 # --------------------------------------------------------------------
 
 @service((Entity, TaskType))
-class ITaskTypeService(IEntityService):
+class ITaskTypeService(IEntityNQService):
     '''
     Provides the service methods for the task type.
     '''

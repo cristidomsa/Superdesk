@@ -10,7 +10,7 @@ Contains the SQL alchemy implementation for desk task API.
 '''
 
 from ..api.task import ITaskService, Task, QTask
-from ..meta.task import TaskMapped, TaskNestMapped
+from ..meta.task import TaskMapped, TaskNest
 from ..meta.task_status import TaskStatusMapped
 from ..meta.task_link import TaskLinkMapped
 from ally.container.ioc import injected
@@ -74,7 +74,7 @@ class TaskServiceAlchemy(EntityServiceAlchemy, ITaskService):
         copyContainer(task, taskDb, exclude=('Status', 'Parent',))
 
         # putting into nested sets
-        nestDb = TaskNestMapped()
+        nestDb = TaskNest()
         nestDb.upperBar = 1
         nestDb.lowerBar = 2
 
@@ -83,7 +83,7 @@ class TaskServiceAlchemy(EntityServiceAlchemy, ITaskService):
             parentDb = self.session().query(TaskMapped).get(task.Parent)
             if not parentDb: raise InputError('Unknown parent task %s' % Task.Parent)
             taskDb.Parent = parentDb.Id
-            try: nestDbParent = self.session().query(TaskNestMapped).filter(TaskNestMapped.task == parentDb.Id).one()
+            try: nestDbParent = self.session().query(TaskNest).filter(TaskNest.task == parentDb.Id).one()
             except NoResultFound: raise InputError('Unknown parent task %s' % Task.Parent)
         else:
             nestDbParent = None
@@ -118,7 +118,7 @@ class TaskServiceAlchemy(EntityServiceAlchemy, ITaskService):
 
         if Task.Parent in task:
             if taskDb.Parent != task.Parent:
-                try: nestDb = self.session().query(TaskNestMapped).filter(TaskNestMapped.task == taskDb.Id).one()
+                try: nestDb = self.session().query(TaskNest).filter(TaskNest.task == taskDb.Id).one()
                 except NoResultFound: raise InputError('Unknown task %s' % Task.Id)
 
                 if task.Parent is None:
@@ -126,7 +126,7 @@ class TaskServiceAlchemy(EntityServiceAlchemy, ITaskService):
                     taskDb.Parent = None
 
                 else:
-                    try: nestDbParent = self.session().query(TaskNestMapped).filter(TaskNestMapped.task == task.Parent).one()
+                    try: nestDbParent = self.session().query(TaskNest).filter(TaskNest.task == task.Parent).one()
                     except NoResultFound: raise InputError('Unknown parent task %s' % Task.Parent)
 
                     # check whether the subtree_node is not an ancestor of the parent_node
@@ -153,7 +153,7 @@ class TaskServiceAlchemy(EntityServiceAlchemy, ITaskService):
         if not taskDb: raise InputError('Unknown task %s' % Task.Id)
         nestDb = None
         try:
-            nestDb = self.session().query(TaskNestMapped).filter(TaskNestMapped.task == taskId).one()
+            nestDb = self.session().query(TaskNest).filter(TaskNest.task == taskId).one()
         except NoResultFound:
             raise InputError('Unknown task %s' % Task.Id)
 
@@ -197,7 +197,7 @@ class TaskServiceAlchemy(EntityServiceAlchemy, ITaskService):
         if not taskDb: raise InputError('Unknown task %s' % Task.Id)
         nestDb = None
         try:
-            nestDb = self.session().query(TaskNestMapped).filter(TaskNestMapped.task == taskId).one()
+            nestDb = self.session().query(TaskNest).filter(TaskNest.task == taskId).one()
         except NoResultFound:
             raise InputError('Unknown task %s' % Task.Id)
 
@@ -211,10 +211,10 @@ class TaskServiceAlchemy(EntityServiceAlchemy, ITaskService):
         if q:
             sql = buildQuery(sql, q, TaskMapped)
 
-        sql = sql.join(TaskNestMapped, TaskMapped.Id == TaskNestMapped.task)
-        sql = sql.filter(TaskNestMapped.group == nestDb.group)
-        sql = sql.filter(TaskNestMapped.upperBar > nestDb.upperBar)
-        sql = sql.filter(TaskNestMapped.lowerBar < nestDb.lowerBar)
+        sql = sql.join(TaskNest, TaskMapped.Id == TaskNest.task)
+        sql = sql.filter(TaskNest.group == nestDb.group)
+        sql = sql.filter(TaskNest.upperBar > nestDb.upperBar)
+        sql = sql.filter(TaskNest.lowerBar < nestDb.lowerBar)
 
         sqlLimit = buildLimits(sql, offset, limit)
         if detailed: return IterPart(sqlLimit.all(), sql.count(), offset, limit)
@@ -249,22 +249,22 @@ class TaskServiceAlchemy(EntityServiceAlchemy, ITaskService):
         diffLift = taskLower - subtaskUpper
 
         # forming the gap in base tree, on the lower bars
-        sql = self.session().query(TaskNestMapped).filter(TaskNestMapped.group == taskGroup)
-        sql = sql.filter(TaskNestMapped.lowerBar >= taskLower)
-        sql = sql.update({TaskNestMapped.lowerBar: TaskNestMapped.lowerBar + subtaskWidth})
+        sql = self.session().query(TaskNest).filter(TaskNest.group == taskGroup)
+        sql = sql.filter(TaskNest.lowerBar >= taskLower)
+        sql = sql.update({TaskNest.lowerBar: TaskNest.lowerBar + subtaskWidth})
 
         # forming the gap in base tree, on the upper bars
-        sql = self.session().query(TaskNestMapped).filter(TaskNestMapped.group == taskGroup)
-        sql = sql.filter(TaskNestMapped.upperBar >= taskLower)
-        sql = sql.update({TaskNestMapped.upperBar: TaskNestMapped.upperBar + subtaskWidth})
+        sql = self.session().query(TaskNest).filter(TaskNest.group == taskGroup)
+        sql = sql.filter(TaskNest.upperBar >= taskLower)
+        sql = sql.update({TaskNest.upperBar: TaskNest.upperBar + subtaskWidth})
 
         # moving the new subtree down
-        sql = self.session().query(TaskNestMapped).filter(TaskNestMapped.group == subtaskGroup)
-        sql = sql.update({TaskNestMapped.upperBar: (TaskNestMapped.upperBar + diffLift), TaskNestMapped.lowerBar: (TaskNestMapped.lowerBar + diffLift)})
+        sql = self.session().query(TaskNest).filter(TaskNest.group == subtaskGroup)
+        sql = sql.update({TaskNest.upperBar: (TaskNest.upperBar + diffLift), TaskNest.lowerBar: (TaskNest.lowerBar + diffLift)})
 
         # setting new group id for the sub-tree
-        sql = self.session().query(TaskNestMapped).filter(TaskNestMapped.group == subtaskGroup)
-        sql = sql.update({TaskNestMapped.group: taskGroup})
+        sql = self.session().query(TaskNest).filter(TaskNest.group == subtaskGroup)
+        sql = sql.update({TaskNest.group: taskGroup})
 
         return True
 
@@ -285,23 +285,23 @@ class TaskServiceAlchemy(EntityServiceAlchemy, ITaskService):
         diffLift = subtaskUpper - 1
 
         # setting new group id for the sub-tree
-        sql = self.session().query(TaskNestMapped).filter(TaskNestMapped.group == taskGroup)
-        sql = sql.filter(and_(TaskNestMapped.upperBar >= subtaskUpper, TaskNestMapped.lowerBar <= subtaskLower))
-        sql = sql.update({TaskNestMapped.group: subtaskGroup})
+        sql = self.session().query(TaskNest).filter(TaskNest.group == taskGroup)
+        sql = sql.filter(and_(TaskNest.upperBar >= subtaskUpper, TaskNest.lowerBar <= subtaskLower))
+        sql = sql.update({TaskNest.group: subtaskGroup})
 
         # removing the gap in remaining tree, on the upper bars
-        sql = self.session().query(TaskNestMapped).filter(TaskNestMapped.group == taskGroup)
-        sql = sql.filter(TaskNestMapped.upperBar > subtaskUpper)
-        sql = sql.update({TaskNestMapped.upperBar: TaskNestMapped.upperBar - subtaskWidth})
+        sql = self.session().query(TaskNest).filter(TaskNest.group == taskGroup)
+        sql = sql.filter(TaskNest.upperBar > subtaskUpper)
+        sql = sql.update({TaskNest.upperBar: TaskNest.upperBar - subtaskWidth})
 
         # removing the gap in remaining tree, on the lower bars
-        sql = self.session().query(TaskNestMapped).filter(TaskNestMapped.group == taskGroup)
-        sql = sql.filter(TaskNestMapped.lowerBar > subtaskUpper)
-        sql = sql.update({TaskNestMapped.lowerBar: TaskNestMapped.lowerBar - subtaskWidth})
+        sql = self.session().query(TaskNest).filter(TaskNest.group == taskGroup)
+        sql = sql.filter(TaskNest.lowerBar > subtaskUpper)
+        sql = sql.update({TaskNest.lowerBar: TaskNest.lowerBar - subtaskWidth})
 
         # moving the new tree up
-        sql = self.session().query(TaskNestMapped).filter(TaskNestMapped.group == subtaskGroup)
-        sql = sql.update({TaskNestMapped.upperBar: (TaskNestMapped.upperBar - diffLift), TaskNestMapped.lowerBar: (TaskNestMapped.lowerBar - diffLift)})
+        sql = self.session().query(TaskNest).filter(TaskNest.group == subtaskGroup)
+        sql = sql.update({TaskNest.upperBar: (TaskNest.upperBar - diffLift), TaskNest.lowerBar: (TaskNest.lowerBar - diffLift)})
 
         return True
 

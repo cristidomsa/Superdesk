@@ -86,8 +86,8 @@ class CardServiceAlchemy(EntityServiceAlchemy, ICardService):
         deskId = self.session().query(CardMapped).filter(CardMapped.Id == cardId).one().Desk
         
         sqlDesk = self.session().query(TaskTypeTaskStatusMapped.taskStatus)
-        sqlDesk = sqlDesk.join(DeskTaskTypeMapped, TaskTypeTaskStatusMapped.taskType == DeskTaskTypeMapped.taskType)
-        sqlDesk = sqlDesk.filter(DeskTaskTypeMapped.desk == deskId)
+        sqlDesk = sqlDesk.join(DeskTaskType, TaskTypeTaskStatusMapped.taskType == DeskTaskType.taskType)
+        sqlDesk = sqlDesk.filter(DeskTaskType.desk == deskId)
         
         sqlCard = self.session().query(CardTaskStatusMapped.taskStatus)
         sqlCard = sqlCard.filter(CardTaskStatusMapped.card == cardId)

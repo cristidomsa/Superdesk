@@ -18,7 +18,7 @@ from sql_alchemy.support.util_service import buildLimits
 from sqlalchemy.sql.expression import not_
 from superdesk.desk.meta.task_status import TaskStatusMapped
 from superdesk.desk.meta.task_type import TaskTypeTaskStatusMapped
-from sql_alchemy.impl.entity import EntityServiceAlchemy
+from sql_alchemy.impl.entity import EntityNQServiceAlchemy, EntitySupportAlchemy
 from sqlalchemy.orm.exc import NoResultFound
 from ally.api.error import InputError
 
@@ -26,7 +26,7 @@ from ally.api.error import InputError
 
 @injected
 @setup(ITaskTypeService, name='taskType')
-class TaskTypeServiceAlchemy(EntityServiceAlchemy, ITaskTypeService):
+class TaskTypeServiceAlchemy(EntityNQServiceAlchemy, ITaskTypeService):
     '''
     Implementation for @see: ITaskTypeService
     '''
@@ -35,7 +35,7 @@ class TaskTypeServiceAlchemy(EntityServiceAlchemy, ITaskTypeService):
         '''
         Construct the task type service.
         '''
-        EntityServiceAlchemy.__init__(self, TaskTypeMapped)
+        EntitySupportAlchemy.__init__(self, TaskTypeMapped)
         
         
     def getStatuses(self, taskTypeKey, offset=None, limit=None, detailed=True):

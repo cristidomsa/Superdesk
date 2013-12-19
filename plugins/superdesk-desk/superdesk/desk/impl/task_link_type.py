@@ -14,7 +14,7 @@ from ..meta.task_link_type import TaskLinkTypeMapped
 from ally.container.ioc import injected
 from ally.container.support import setup
 from sql_alchemy.impl.entity import EntityGetServiceAlchemy, \
-    EntityFindServiceAlchemy
+    EntityFindServiceAlchemy, EntitySupportAlchemy
 
 # --------------------------------------------------------------------
 
@@ -29,4 +29,4 @@ class TaskLinkTypeServiceAlchemy(EntityGetServiceAlchemy, EntityFindServiceAlche
         '''
         Construct the task link type service.
         '''
-        EntityGetServiceAlchemy.__init__(self, TaskLinkTypeMapped)
+        EntitySupportAlchemy.__init__(self, TaskLinkTypeMapped)

@@ -13,14 +13,14 @@ from ..api.task_status import ITaskStatusService
 from ..meta.task_status import TaskStatusMapped
 from ally.container.ioc import injected
 from ally.container.support import setup
-from sql_alchemy.impl.entity import EntityServiceAlchemy
+from sql_alchemy.impl.entity import EntityNQServiceAlchemy, EntitySupportAlchemy
 
 
 # --------------------------------------------------------------------
 
 @injected
 @setup(ITaskStatusService, name='taskStatusService')
-class TaskStatusServiceAlchemy(EntityServiceAlchemy, ITaskStatusService):
+class TaskStatusServiceAlchemy(EntityNQServiceAlchemy, ITaskStatusService):
     '''
     Implementation for @see: ITaskStatusService
     '''
@@ -29,4 +29,4 @@ class TaskStatusServiceAlchemy(EntityServiceAlchemy, ITaskStatusService):
         '''
         Construct the task status service.
         '''
-        EntityServiceAlchemy.__init__(self, TaskStatusMapped)
+        EntitySupportAlchemy.__init__(self, TaskStatusMapped)

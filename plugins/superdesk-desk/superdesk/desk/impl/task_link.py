@@ -15,7 +15,6 @@ from ..meta.task_link_type import TaskLinkTypeMapped
 from ally.container.ioc import injected
 from ally.container.support import setup
 from ally.api.error import InputError
-from ally.internationalization import _
 from ally.support.api.util_service import copyContainer
 from sql_alchemy.support.util_service import buildQuery, buildLimits
 from sql_alchemy.impl.entity import EntityServiceAlchemy
@@ -46,7 +45,7 @@ class TaskLinkServiceAlchemy(EntityServiceAlchemy, ITaskLinkService):
         '''
         sql = self.session().query(TaskLinkMapped)
         if typeKey:
-            sql = sql.join(TaskLinkTypeMapped).filter(TaskLinkTypeMapped.Key == typeKey)
+            sql = sql.join(TaskLinkTypeMapped).filter(TaskLinkTypeMapped.Name == typeKey)
         if q:
             sql = buildQuery(sql, q, TaskLinkMapped)
         sqlLimit = buildLimits(sql, offset, limit)
@@ -60,7 +59,7 @@ class TaskLinkServiceAlchemy(EntityServiceAlchemy, ITaskLinkService):
         sql = self.session().query(TaskLinkMapped)
         sql = sql.filter(TaskLinkMapped.Head == headId)
         if typeKey:
-            sql = sql.join(TaskLinkTypeMapped).filter(TaskLinkTypeMapped.Key == typeKey)
+            sql = sql.join(TaskLinkTypeMapped).filter(TaskLinkTypeMapped.Name == typeKey)
         if q:
             sql = buildQuery(sql, q, TaskLinkMapped)
         sqlLimit = buildLimits(sql, offset, limit)
@@ -74,7 +73,7 @@ class TaskLinkServiceAlchemy(EntityServiceAlchemy, ITaskLinkService):
         sql = self.session().query(TaskLinkMapped)
         sql = sql.filter(TaskLinkMapped.Tail == tailId)
         if typeKey:
-            sql = sql.join(TaskLinkTypeMapped).filter(TaskLinkTypeMapped.Key == typeKey)
+            sql = sql.join(TaskLinkTypeMapped).filter(TaskLinkTypeMapped.Name == typeKey)
         if q:
             sql = buildQuery(sql, q, TaskLinkMapped)
         sqlLimit = buildLimits(sql, offset, limit)
@@ -88,7 +87,7 @@ class TaskLinkServiceAlchemy(EntityServiceAlchemy, ITaskLinkService):
         sql = self.session().query(TaskLinkMapped)
         sql = sql.filter(or_(TaskLinkMapped.Head == sideId, TaskLinkMapped.Tail == sideId))
         if typeKey:
-            sql = sql.join(TaskLinkTypeMapped).filter(TaskLinkTypeMapped.Key == typeKey)
+            sql = sql.join(TaskLinkTypeMapped).filter(TaskLinkTypeMapped.Name == typeKey)
         if q:
             sql = buildQuery(sql, q, TaskLinkMapped)
         sqlLimit = buildLimits(sql, offset, limit)
@@ -106,7 +105,7 @@ class TaskLinkServiceAlchemy(EntityServiceAlchemy, ITaskLinkService):
         copyContainer(taskLink, taskLinkDb, exclude=('Type',))
 
         if taskLinkDb.Head == taskLinkDb.Tail:
-            raise InputError(Ref(_('Can not link a task to itself'),))
+            raise InputError('Can not link a task to itself')
 
         try:
             self.session().add(taskLinkDb)
@@ -124,13 +123,13 @@ class TaskLinkServiceAlchemy(EntityServiceAlchemy, ITaskLinkService):
         '''
         assert isinstance(taskLink, TaskLink), 'Invalid task link %s' % taskLink
         taskLinkDb = self.session().query(TaskLinkMapped).get(taskLink.Id)
-        if not taskLinkDb: raise InputError(Ref(_('Unknown task link id'), ref=TaskLink.Id))
+        if not taskLinkDb: raise InputError('Unknown task link id')
         if TaskLink.Type in taskLink: taskLinkDb.typeId = self._linkTypeId(taskLink.Type)
 
         copyContainer(taskLink, taskLinkDb, exclude=('Type',))
 
         if taskLinkDb.Head == taskLinkDb.Tail:
-            raise InputError(Ref(_('Can not link a task to itself'),))
+            raise InputError('Can not link a task to itself')
 
         try:
             self.session().flush((taskLinkDb,))
@@ -143,7 +142,7 @@ class TaskLinkServiceAlchemy(EntityServiceAlchemy, ITaskLinkService):
         Provides the task link type id that has the provided key.
         '''
         try:
-            sql = self.session().query(TaskLinkTypeMapped.id).filter(TaskLinkTypeMapped.Key == key)
+            sql = self.session().query(TaskLinkTypeMapped.id).filter(TaskLinkTypeMapped.Name == key)
             return sql.one()[0]
         except NoResultFound:
-            raise InputError(Ref(_('Invalid task link type %(type)s') % dict(type=key), ref=TaskLink.Type))
+            raise InputError(('Invalid task link type %(type)s') % dict(type=key))

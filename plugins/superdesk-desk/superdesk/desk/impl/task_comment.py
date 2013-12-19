@@ -16,7 +16,7 @@ from ally.container.support import setup
 from ally.api.error import InputError
 from ally.support.api.util_service import copyContainer
 from sql_alchemy.support.util_service import buildQuery, buildLimits
-from sql_alchemy.impl.entity import EntityServiceAlchemy
+from sql_alchemy.impl.entity import EntityServiceAlchemy, EntitySupportAlchemy
 from sqlalchemy.exc import SQLAlchemyError
 from ally.api.extension import IterPart
 from sqlalchemy.sql.functions import current_timestamp
@@ -35,7 +35,7 @@ class TaskCommentServiceAlchemy(EntityServiceAlchemy, ITaskCommentService):
         '''
         Construct the desk task comment service.
         '''
-        EntityServiceAlchemy.__init__(self, TaskCommentMapped, QTaskComment)
+        EntitySupportAlchemy.__init__(self, TaskCommentMapped, QTaskComment)
 
     def getAll(self, taskId, userId=None, offset=None, limit=None, detailed=False, q=None):
         '''

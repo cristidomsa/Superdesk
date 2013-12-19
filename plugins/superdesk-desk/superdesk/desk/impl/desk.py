@@ -158,7 +158,7 @@ class DeskServiceAlchemy(EntityServiceAlchemy, IDeskService):
         Provides the task type id that has the provided key.
         '''
         try:
-            sql = self.session().query(TaskTypeMapped.id).filter(TaskTypeMapped.Key == key)
+            sql = self.session().query(TaskTypeMapped.id).filter(TaskTypeMapped.Name == key)
             return sql.one()[0]
         except NoResultFound:
             raise InputError('Invalid task type %(type)s') % dict(type=key)       
